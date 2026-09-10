@@ -1,6 +1,7 @@
 import {catalog, getTest, getOptions, refs, VERSION} from './catalog.js';
 import {calculate, validateAnswers, validateRecord} from './scoring.js';
 import {downloadReport} from './pdf.js';
+import {metricDisplay,palette,formatScore} from './result-display.js';
 
 const main=document.querySelector('#main');
 const sessions=new Map();
@@ -114,7 +115,10 @@ function metadata(t,s) {
   return [...(t.id!=='disc'?[['Especie',t.species]]:[]),...fields.filter(([key])=>s.data[key]&&(!clientMode||!['professional','clinic'].includes(key))).map(([key,label])=>[label,s.data[key]])];
 }
 function metricsHtml(result,t) {
-  return `<div class="score-grid">${result.metrics.map((m,i)=>`<div class="score-tile${i===0?' primary':''}"><span>${esc(m.label)}</span><strong>${m.value===null?'—':m.max===1?m.value.toFixed(3).replace('.',','):m.value}<small>${m.max!==1&&m.value!==null?` / ${m.max}`:''}</small></strong><span>${m.value===null?'Sin datos':t.id==='disc'?`${(m.value/30*100).toFixed(1).replace('.',',')} % de elecciones`:m.coverage|| (m.max===1?'Índice normalizado':'Puntos')}</span><div class="bar"><i style="width:${m.value===null?0:m.value/m.max*100}%"></i></div></div>`).join('')}</div>`;
+  return `<div class="result-key"><strong>Tu resultado, de un vistazo</strong><p>El marcador sitúa tu puntuación entre el mínimo y el máximo posibles. ${['dias','cfq'].includes(t.id)?'El intervalo de estos índices es 0,200–1,000; no hay puntos de corte clínicos acreditados.':t.id==='disc'?'Los colores representan estilos de comunicación, sin jerarquía entre ellos.':t.id==='fgs'?'Esta escala tiene dos zonas; no se añade una alerta intermedia sin respaldo.':'El semáforo corresponde al total completo. Las subescalas muestran frecuencia de cambios.'}</p></div><div class="visual-scores">${result.metrics.map((m,i)=>{
+    const d=metricDisplay(t,result,i),value=formatScore(m.value,m.max);
+    return `<section class="visual-score${i===0&&t.id!=='disc'?' lead-score':''}" style="--score-color:${palette[d.color]}"><div class="score-heading"><h3>${esc(m.label)}</h3><span class="score-state">${esc(d.status)}</span></div><div class="score-reading"><strong>${value}</strong><span>${t.id==='disc'?`${(m.value/30*100).toFixed(1).replace('.',',')} % de elecciones`:m.coverage|| (m.max===1?'Índice normalizado':'Puntos')}</span></div><div class="range-visual" role="img" aria-label="${esc(`${m.label}: ${value}. Mínimo ${formatScore(d.min,m.max)}, máximo ${formatScore(d.max,m.max)}. ${d.status}`)}"><div class="range-track ${d.bands.length?'banded':'continuous'}">${d.bands.map(b=>`<span style="width:${(b.to-b.from)/(d.max-d.min)*100}%;background:${palette[b.color]}"></span>`).join('')}</div>${d.position===null?'':`<span class="range-marker" style="left:${d.position}%" aria-hidden="true"></span>`}</div><div class="range-extremes"><span><b>${formatScore(d.min,m.max)}</b> mínimo</span><span><b>${formatScore(d.max,m.max)}</b> máximo</span></div>${d.bands.length?`<div class="range-legend">${d.bands.map(b=>`<div><i style="background:${palette[b.color]}" aria-hidden="true"></i><span><b>${b.label}</b>${b.meaning}</span></div>`).join('')}</div>`:`<div class="range-direction"><span>${d.low}</span><span>${d.high}</span></div>`}<p class="score-meaning">${esc(d.meaning)}</p></section>`;
+  }).join('')}</div>`;
 }
 function renderResults(t) {
   setNav('catalog');currentId=t.id;
