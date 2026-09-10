@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cuestionarios de medicina del comportamiento y bienestar animal. Evaluación, evidencia científica e informes para veterinarios y familias.">
+  <meta name="theme-color" content="#153f43">
+  <meta name="referrer" content="no-referrer">
+  <title>GEMCA · Cuestionarios de comportamiento</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+  <header class="header">
+    <a href="#/" class="brand" aria-label="GEMCA, inicio"><span class="brand-symbol" aria-hidden="true">g.</span><span>GEMCA<small>COMPORTAMIENTO & BIENESTAR</small></span></a>
+    <nav aria-label="Navegación principal"><a href="#/" data-nav="catalog">Cuestionarios</a><a href="#/evidencia" data-nav="evidence">Bibliografía</a><a href="#/guia" data-nav="guide">Cómo funciona</a></nav>
+    <span class="edition">Edición de trabajo <span>01</span></span>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <footer class="footer"><div><strong>GEMCA</strong><p>Medicina del comportamiento y bienestar animal.</p></div><p>Una herramienta de apoyo al criterio veterinario.<br>Propuesta para revisión del grupo · Septiembre 2026</p><a href="https://gemca.org/" target="_blank" rel="noopener noreferrer">Conocer GEMCA ↗</a></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <dialog id="share-dialog" aria-labelledby="share-title"><div class="dialog-head"><h2 id="share-title">Compartir cuestionario</h2><button type="button" class="icon-button" id="close-share" aria-label="Cerrar">×</button></div><div id="share-content"></div></dialog>
+  <input type="file" id="import-file" accept=".json,application/json" hidden>
+  <noscript>Activa JavaScript para rellenar y calcular los cuestionarios.</noscript>
+</body>
+</html>
