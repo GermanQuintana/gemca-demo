@@ -1,5 +1,5 @@
-import {refs, getOptions, VERSION} from './catalog.js';
-import {metricDisplay,palette,formatScore} from './result-display.js';
+import {refs, getOptions, VERSION} from './catalog.js?v=3d67a1b791ab';
+import {metricDisplay,palette,formatScore} from './result-display.js?v=3d67a1b791ab';
 
 // Pure text layout: searchable PDF, predictable page breaks, no HTML capture.
 // jsPDF is vendored locally, so patient data never goes to an external service.
@@ -88,7 +88,7 @@ export function createReport(JsPDF,test,session,result,metadata,clientMode=false
 let loader;
 function loadJsPDF(){
   if(globalThis.jspdf?.jsPDF)return Promise.resolve(globalThis.jspdf.jsPDF);
-  if(!loader)loader=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('./vendor/jspdf.umd.min.js',import.meta.url).href;script.onload=()=>globalThis.jspdf?.jsPDF?resolve(globalThis.jspdf.jsPDF):reject(new Error('Biblioteca PDF no disponible'));script.onerror=()=>{loader=null;script.remove();reject(new Error('No se pudo cargar la biblioteca PDF'));};document.head.append(script);});
+  if(!loader)loader=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('./vendor/jspdf.umd.min.js?v=3d67a1b791ab',import.meta.url).href;script.onload=()=>globalThis.jspdf?.jsPDF?resolve(globalThis.jspdf.jsPDF):reject(new Error('Biblioteca PDF no disponible'));script.onerror=()=>{loader=null;script.remove();reject(new Error('No se pudo cargar la biblioteca PDF'));};document.head.append(script);});
   return loader;
 }
 export async function downloadReport(test,session,result,metadata,clientMode) {

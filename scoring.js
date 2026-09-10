@@ -1,4 +1,4 @@
-import { getTest, getOptions, cfqComponents } from './catalog.js';
+import { getTest, getOptions, cfqComponents } from './catalog.js?v=3d67a1b791ab';
 
 export function validateAnswers(test, answers, requireComplete = true) {
   if (!Array.isArray(answers) || answers.length !== test.questions.length) throw new Error('Número de respuestas incorrecto.');

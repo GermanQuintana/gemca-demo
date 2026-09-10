@@ -1,5 +1,5 @@
-import { supplied } from './supplied-data.js';
-import {glasgowTests,glasgowRefs} from './glasgow.js';
+import { supplied } from './supplied-data.js?v=3d67a1b791ab';
+import {glasgowTests,glasgowRefs} from './glasgow.js?v=3d67a1b791ab';
 
 export const VERSION = '2026.09.1';
 export const refs = {
