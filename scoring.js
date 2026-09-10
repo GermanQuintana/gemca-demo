@@ -27,7 +27,20 @@ export function calculate(id, answers) {
   if(!count) throw new Error('No hay respuestas evaluables. Revisa la observación antes de calcular.');
   const complete=count===answers.length;
   const result={count,total:answers.length,complete,metrics:[],status:'',interpretation:'',guidance:[...test.guidance]};
-  if(id==='dias') {
+  if(id.startsWith('glasgow-')) {
+    const omitted=id==='glasgow-dog'&&answers[2]==='omitted';
+    const max=id==='glasgow-dog'&&!omitted?24:20;
+    const threshold=max===24?6:5;
+    const total=answers.reduce((s,a)=>s+(typeof a==='number'?a:0),0);
+    result.count=answers.filter(a=>typeof a==='number').length;
+    result.total=answers.length-(omitted?1:0);
+    result.complete=result.count===result.total;
+    if(!result.count)throw new Error('No hay respuestas evaluables.');
+    result.metrics=[tile(result.complete?'Total Glasgow':'Subtotal Glasgow',total,max,`${result.count}/${result.total} apartados${omitted?' · movilidad omitida':''}`)];
+    result.threshold=threshold;
+    result.status=!result.complete?'Registro parcial · sin umbral automático':total>=threshold?'Umbral de intervención alcanzado':'Por debajo del umbral de intervención';
+    result.interpretation=!result.complete?'Faltan apartados. No comparar este subtotal con el umbral ni reducir el denominador por ausencias distintas de la omisión permitida de movilidad.':`Puntuación ${total}/${max}. Umbral de intervención ≥${threshold}/${max}. ${total>=threshold?'Requiere valoración veterinaria de analgesia de rescate.':'No descarta dolor; integrar con la exploración clínica.'}${omitted?' Se utiliza la variante canina sin movilidad evaluable.':''}`;
+  } else if(id==='dias') {
     const groups=[
       {label:'OQS · índice global',idx:range(18),rev:[9,10,11,12,13,14]},
       {label:'F1 · regulación conductual',idx:[0,1,2,6,7,9,12,13,16,17],rev:[9,12,13]},

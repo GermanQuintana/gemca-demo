@@ -1,7 +1,9 @@
 import { supplied } from './supplied-data.js';
+import {glasgowTests,glasgowRefs} from './glasgow.js';
 
 export const VERSION = '2026.09.1';
 export const refs = {
+  ...glasgowRefs,
   dias: { title: 'Wright HF, Mills DS, Pollux PMJ. Development and Validation of a Psychometric Tool for Assessing Impulsivity in the Domestic Dog (Canis familiaris). International Journal of Comparative Psychology. 2011;24:210–225.', url: 'https://escholarship.org/content/qt7pb1j56q/qt7pb1j56q.pdf' },
   diasLicense: { title: 'University of Lincoln · K9 Metrics. Canine Impulsivity Profile: condiciones de uso y acceso al instrumento.', url: 'https://www.k9metrics.com/canine-assessment-tools/impulsivity-profile/' },
   eecc: { title: 'CAWEC para Purina. Escala de Evaluación Cognitiva Canina (EECC). Formulario original en español, 2 páginas; basado en Landsberg, Mad’ari y Zika (2017).', url: 'https://www.vetcenter.purina.es/sites/default/files/materials-pdfs/20.%20Escala%20CAWEC%20de%20Evaluacion%20Cognitiva.pdf' },
@@ -54,6 +56,7 @@ const cfqRows = [
 ];
 
 export const catalog = [
+  ...glasgowTests,
   {id:'dias',short:'DIAS',title:'Impulsividad canina',category:'Conducta y emoción',kind:'behavior',species:'Perro',time:'5–8 min',badge:'Original validado',badgeType:'amber',
    summary:'Explora regulación conductual, respuesta a la novedad y capacidad de respuesta.',
    note:'Adaptación española aportada · validación de esta traducción no acreditada.',

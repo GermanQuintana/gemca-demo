@@ -21,7 +21,7 @@ function home() {
   setNav('catalog');currentId=null;clientMode=false;
   main.innerHTML=`<section class="hero"><div><div class="eyebrow">HERRAMIENTAS PARA LA CONSULTA</div><h1>Comprender su conducta.<br><em>Cuidar su bienestar.</em></h1><p>Cuestionarios de apoyo a la medicina del comportamiento. Recoge lo que observa la familia, interpreta los resultados y construye una valoración clínica mejor documentada.</p><div class="hero-actions"><a class="btn" href="#biblioteca" id="jump-library">Explorar cuestionarios <span aria-hidden="true">↓</span></a><a href="#/guia" class="text-button">Cómo utilizar la plataforma</a></div></div><div class="feature-panel"><div class="eyebrow">DE LA OBSERVACIÓN A LA CONSULTA</div><h3>Cada respuesta aporta contexto.</h3><div class="mini-flow" aria-label="Observar, evaluar, acompañar"><span><b>01</b>Observar</span><i class="flow-line"></i><span><b>02</b>Evaluar</span><i class="flow-line"></i><span><b>03</b>Acompañar</span></div><div class="panel-bottom"><span>Familia + criterio veterinario</span><span aria-hidden="true">↗</span></div></div></section>
   <div class="science-strip"><div><span class="symbol" aria-hidden="true">⌘</span><strong>Evidencia y límites a la vista</strong></div><div><span class="symbol" aria-hidden="true">↗</span><strong>Cuestionarios para compartir</strong></div><div><span class="symbol" aria-hidden="true">▤</span><strong>Informe clínico en PDF</strong></div></div>
-  <section id="biblioteca"><div class="catalog-heading"><div><div class="eyebrow">BIBLIOTECA CLÍNICA</div><h2>Elige por dónde empezar</h2><p>5 herramientas integradas y 3 recursos externos.</p></div><label class="search"><span aria-hidden="true">⌕</span><span class="screen-reader">Buscar cuestionarios</span><input id="search" type="search" placeholder="Buscar por nombre, especie…" value="${esc(query)}"></label></div>
+  <section id="biblioteca"><div class="catalog-heading"><div><div class="eyebrow">BIBLIOTECA CLÍNICA</div><h2>Elige por dónde empezar</h2><p>${catalog.filter(t=>t.questions).length} herramientas integradas y ${catalog.filter(t=>t.external).length} recursos externos.</p></div><label class="search"><span aria-hidden="true">⌕</span><span class="screen-reader">Buscar cuestionarios</span><input id="search" type="search" placeholder="Buscar por nombre, especie…" value="${esc(query)}"></label></div>
   <div class="filters" aria-label="Filtrar cuestionarios">${['Todos','Conducta y emoción','Cognición y envejecimiento','Dolor y bienestar','Equipos veterinarios'].map(f=>`<button class="chip" data-filter="${f}" aria-pressed="${f===filter}">${f}</button>`).join('')}</div><div id="catalog-count" class="screen-reader" role="status"></div><div class="catalog-grid" id="catalog-grid"></div></section>
   <div class="help-band"><div><h3>La evidencia también tiene matices.</h3><p>Una escala validada no convierte automáticamente su traducción en una versión validada.</p></div><a class="btn secondary" href="#/evidencia">Revisar bibliografía ↗</a></div>`;
   renderCards();
@@ -63,6 +63,7 @@ function fieldHtml([key,label,type='text',options],s) {
   return `<label class="field${type==='textarea'?' full':''}">${label}${control}</label>`;
 }
 function renderEditor(t) {
+  if(t.professionalOnly) clientMode=false;
   setNav('catalog');currentId=t.id;
   const s=getSession(t),team=t.id==='disc';
   const fields=(team?teamFields:clinicalFields).filter(f=>!clientMode||!['professional','clinic'].includes(f[0]));
@@ -72,13 +73,14 @@ function renderEditor(t) {
   <form id="assessment" autocomplete="off" novalidate><section class="section-box"><h2>01 · ${team?'Datos de la actividad':'Ficha del paciente'}</h2><p class="muted">Datos opcionales para identificar el informe. Puedes utilizar un código en lugar de un nombre.</p><div class="form-grid">${fields.map(f=>fieldHtml(f,s)).join('')}</div></section>
   <section class="section-box"><h2>02 · ${t.id==='fgs'?'Observación facial':'Cuestionario'}</h2>
   ${t.id==='cfq'?`<label class="field">Idioma de administración<select id="language"><option value="es"${s.lang==='es'?' selected':''}>Español · traducción de trabajo no validada</option><option value="en"${s.lang==='en'?' selected':''}>English · original items</option></select></label>`:''}
-  ${t.id==='fgs'?`<div class="note">${link(refs.fgsManual.url,'Consultar el manual visual oficial')}<p>Usa sus criterios para puntuar cada unidad facial.</p></div><label class="checkline"><input type="checkbox" id="manual"${s.manualAcknowledged?' checked':''}>He consultado los criterios visuales del manual oficial para esta evaluación.</label>`:''}
+  ${(t.id==='fgs'||t.manualRef)?`<div class="note">${link(refs[t.manualRef||'fgsManual'].url,'Abrir formulario o manual original')}<p>${t.manualRef?'Uso veterinario. Traslada las puntuaciones del original, incluida su versión e idioma en las notas. No asignes números sin aplicar sus descriptores.':'Usa sus criterios para puntuar cada unidad facial.'}</p></div><label class="checkline"><input type="checkbox" id="manual"${s.manualAcknowledged?' checked':''}>He aplicado el protocolo del formulario o manual original para esta evaluación.</label>`:''}
   <div id="questions">${questionsHtml(t,s)}</div></section>
   ${!clientMode?`<section class="section-box"><h2>03 · ${team?'Reflexión y acuerdos':'Valoración profesional'}</h2><div class="form-grid">${[['notes',team?'Observaciones de la actividad':'Valoración clínica e hipótesis','textarea'],['plan',team?'Acuerdos del equipo':'Indicaciones individualizadas','textarea'],['followup','Seguimiento previsto','textarea']].map(f=>fieldHtml(f,s)).join('')}</div></section>`:''}
   <div class="form-actions"><p id="form-error" role="alert" class="muted"></p><button type="submit" class="btn">${clientMode?'Revisar mis respuestas':'Calcular y ver informe'} →</button></div></form></div>
   <aside class="side-panel"><section class="section-box"><h3>Tu evaluación</h3><p>${t.questions.length} ${t.id==='fgs'?'unidades faciales':'preguntas'} · ${t.time}</p><div class="progress-label"><span>Progreso</span><strong id="progress-text"></strong></div><progress id="progress" max="${t.questions.length}" value="0" aria-label="Preguntas respondidas"></progress><p id="coverage"></p><label class="checkline"><input type="checkbox" id="remember"${s.remember?' checked':''}>Guardar borrador en este dispositivo</label><button type="button" class="btn secondary" id="restore">Recuperar borrador</button><button type="button" class="btn secondary" id="export-draft">Descargar respuestas</button><button type="button" class="text-button" id="clear-draft">Borrar borrador guardado</button></section><section class="section-box side-help"><h3>${team?'Una conversación, no una etiqueta':'Observación + contexto'}</h3><p>${team?'Usa los resultados para explorar cómo colaborar mejor.':'No provoques una conducta para completar el cuestionario. Si no puedes evaluarla, indica que no es valorable.'}</p><a href="#/guia">Ayuda de uso</a></section></aside></div>`;
   updateProgress(t,s);
   document.querySelector('#share').onclick=()=>share(t);
+  if(t.professionalOnly)document.querySelector('#share').hidden=true;
   document.querySelector('#import')?.addEventListener('click',()=>document.querySelector('#import-file').click());
   document.querySelector('#assessment').addEventListener('input',e=>{
     if(e.target.name.startsWith('q-')) return;
@@ -106,7 +108,7 @@ function submit(t,s) {
   const missing=validateAnswers(t,s.answers,false);
   const error=document.querySelector('#form-error');
   if(missing.length) {error.textContent=`Faltan ${missing.length} respuestas. Revisa las preguntas marcadas.`;missing.forEach(i=>document.querySelector(`#question-${i}`).classList.add('invalid'));const first=document.querySelector(`#question-${missing[0]}`);first.scrollIntoView({behavior:'smooth',block:'center'});first.querySelector('input').focus({preventScroll:true});return;}
-  if(t.id==='fgs'&&!s.manualAcknowledged){error.textContent='Consulta los criterios visuales oficiales y marca la casilla antes de calcular.';document.querySelector('#manual').focus();return;}
+  if((t.id==='fgs'||t.manualRef)&&!s.manualAcknowledged){error.textContent='Consulta y aplica el protocolo original, y marca la casilla antes de calcular.';document.querySelector('#manual').focus();return;}
   try {calculate(t.id,s.answers);location.hash=`#/resultado/${t.id}${clientMode?'?cliente=1':''}`;}catch(e){error.textContent=e.message;}
 }
 
@@ -115,15 +117,16 @@ function metadata(t,s) {
   return [...(t.id!=='disc'?[['Especie',t.species]]:[]),...fields.filter(([key])=>s.data[key]&&(!clientMode||!['professional','clinic'].includes(key))).map(([key,label])=>[label,s.data[key]])];
 }
 function metricsHtml(result,t) {
-  return `<div class="result-key"><strong>Tu resultado, de un vistazo</strong><p>El marcador sitúa tu puntuación entre el mínimo y el máximo posibles. ${['dias','cfq'].includes(t.id)?'El intervalo de estos índices es 0,200–1,000; no hay puntos de corte clínicos acreditados.':t.id==='disc'?'Los colores representan estilos de comunicación, sin jerarquía entre ellos.':t.id==='fgs'?'Esta escala tiene dos zonas; no se añade una alerta intermedia sin respaldo.':'El semáforo corresponde al total completo. Las subescalas muestran frecuencia de cambios.'}</p></div><div class="visual-scores">${result.metrics.map((m,i)=>{
+  return `<div class="result-key"><strong>Tu resultado, de un vistazo</strong><p>El marcador sitúa tu puntuación entre el mínimo y el máximo posibles. ${['dias','cfq'].includes(t.id)?'El intervalo de estos índices es 0,200–1,000; no hay puntos de corte clínicos acreditados.':t.id==='disc'?'Los colores representan estilos de comunicación, sin jerarquía entre ellos.':(t.id==='fgs'||t.manualRef)?'Esta escala tiene dos zonas; no se añade una alerta intermedia sin respaldo.':'El semáforo corresponde al total completo. Las subescalas muestran frecuencia de cambios.'}</p></div><div class="visual-scores">${result.metrics.map((m,i)=>{
     const d=metricDisplay(t,result,i),value=formatScore(m.value,m.max);
     return `<section class="visual-score${i===0&&t.id!=='disc'?' lead-score':''}" style="--score-color:${palette[d.color]}"><div class="score-heading"><h3>${esc(m.label)}</h3><span class="score-state">${esc(d.status)}</span></div><div class="score-reading"><strong>${value}</strong><span>${t.id==='disc'?`${(m.value/30*100).toFixed(1).replace('.',',')} % de elecciones`:m.coverage|| (m.max===1?'Índice normalizado':'Puntos')}</span></div><div class="range-visual" role="img" aria-label="${esc(`${m.label}: ${value}. Mínimo ${formatScore(d.min,m.max)}, máximo ${formatScore(d.max,m.max)}. ${d.status}`)}"><div class="range-track ${d.bands.length?'banded':'continuous'}">${d.bands.map(b=>`<span style="width:${(b.to-b.from)/(d.max-d.min)*100}%;background:${palette[b.color]}"></span>`).join('')}</div>${d.position===null?'':`<span class="range-marker" style="left:${d.position}%" aria-hidden="true"></span>`}</div><div class="range-extremes"><span><b>${formatScore(d.min,m.max)}</b> mínimo</span><span><b>${formatScore(d.max,m.max)}</b> máximo</span></div>${d.bands.length?`<div class="range-legend">${d.bands.map(b=>`<div><i style="background:${palette[b.color]}" aria-hidden="true"></i><span><b>${b.label}</b>${b.meaning}</span></div>`).join('')}</div>`:`<div class="range-direction"><span>${d.low}</span><span>${d.high}</span></div>`}<p class="score-meaning">${esc(d.meaning)}</p></section>`;
   }).join('')}</div>`;
 }
 function renderResults(t) {
+  if(t.professionalOnly) clientMode=false;
   setNav('catalog');currentId=t.id;
   const s=getSession(t);let r;
-  try {r=calculate(t.id,s.answers);if(t.id==='fgs'&&!s.manualAcknowledged)throw new Error();}catch {renderEditor(t);toast('Completa el cuestionario antes de abrir el informe.');return;}
+  try {r=calculate(t.id,s.answers);if((t.id==='fgs'||t.manualRef)&&!s.manualAcknowledged)throw new Error();}catch {renderEditor(t);toast('Completa el cuestionario antes de abrir el informe.');return;}
   const modeQuery=clientMode?'?cliente=1':'';
   main.innerHTML=`<a class="back" href="#/cuestionario/${t.id}${modeQuery}">← Revisar respuestas</a><div class="workspace-head"><div><div class="eyebrow">${clientMode?'RESUMEN PARA COMPARTIR CON EL VETERINARIO':'INFORME DE EVALUACIÓN'}</div><h1>${t.short} · ${t.title}</h1><p>${clientMode?'Descarga el archivo de respuestas y devuélvelo por el canal acordado. No se ha enviado automáticamente.':'Revisa el resultado junto con la historia y la observación clínica.'}</p></div><div class="button-row"><button class="btn" id="pdf">Descargar PDF ↓</button><button class="btn secondary" id="print">Imprimir</button></div></div><div class="workspace-layout"><div class="section-box report" id="report"><div class="print-only"><div class="eyebrow">GEMCA · PROPUESTA DE TRABAJO</div><h1>${t.short} · ${t.title}</h1></div><p class="muted">Versión ${VERSION} · ${t.id==='cfq'?(s.lang==='en'?'Ítems originales en inglés':'Traducción española de trabajo'):'Español'} · ${r.count}/${r.total} respuestas evaluables</p>
   <h2>${t.id==='disc'?'Ficha de la actividad':'Ficha del paciente'}</h2><dl>${metadata(t,s).map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
@@ -137,6 +140,7 @@ function renderResults(t) {
   document.querySelector('#print').onclick=()=>window.print();
   document.querySelector('#export').onclick=()=>downloadAnswers(t,s);
   document.querySelector('#share-result').onclick=()=>share(t);
+  if(t.professionalOnly)document.querySelector('#share-result').hidden=true;
 }
 
 function record(t,s) {
@@ -151,6 +155,7 @@ function persist(t,s) {if(!s.remember)return;try{localStorage.setItem(storageKey
 function restore(t) {try{const raw=localStorage.getItem(storageKey(t));if(!raw){toast('No hay un borrador guardado para este cuestionario y modo.');return;}const saved=validateRecord(JSON.parse(raw));sessions.set(sessionKey(t),{...saved,remember:true});renderEditor(t);toast('Borrador recuperado.');}catch{toast('No se pudo recuperar un borrador compatible.');}}
 
 function share(t) {
+  if(t.professionalOnly){toast('Esta escala requiere evaluación veterinaria y no dispone de modo cliente.');return;}
   const url=new URL(location.href);url.hash=`/cuestionario/${t.id}?cliente=1`;url.search='';
   const local=['localhost','127.0.0.1',''].includes(url.hostname)||url.protocol==='file:';
   document.querySelector('#share-content').innerHTML=`<p>Envía este enlace para que ${t.id==='disc'?'un compañero':'la familia'} complete <strong>${t.short}</strong>. No incluye datos del paciente, respuestas ni notas clínicas.</p>${local?'<div class="note amber">Esta es una vista local. El enlace solo funcionará en este equipo. Para enviarlo a otra persona, primero hay que publicar la web.</div>':''}<label class="field">Enlace al cuestionario vacío<textarea readonly class="link-output" id="share-link">${esc(url.href)}</textarea></label><button class="btn" id="copy-link">Copiar enlace</button><p class="muted" style="margin-top:18px">Al terminar, el destinatario descarga sus respuestas y te devuelve el archivo. No existe envío automático.</p>`;

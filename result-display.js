@@ -4,7 +4,10 @@ export const formatScore=(n,max=1)=>n===null?'No calculable':max===1?n.toFixed(3
 export function metricDisplay(test,result,index){
   const m=result.metrics[index];
   const d={min:['dias','cfq'].includes(test.id)?0.2:0,max:m.max,color:'teal',bands:[],status:'Perfil descriptivo',low:'Menor puntuación',high:'Mayor puntuación',meaning:'La posición muestra la puntuación dentro del intervalo posible, no un porcentaje de enfermedad.'};
-  if(test.id==='dias'){
+  if(test.id.startsWith('glasgow-')){
+    d.low='Menor puntuación';d.high='Mayor puntuación';
+    if(result.complete){const cut=result.threshold;d.bands=[{from:0,to:cut-.5,label:`0–${cut-1} · Bajo umbral`,color:'green',meaning:'No descarta dolor. Mantener valoración clínica.'},{from:cut-.5,to:m.max,label:`${cut}–${m.max} · Valorar analgesia`,color:'red',meaning:'Umbral de intervención alcanzado: valorar analgesia de rescate por el veterinario.'}];const b=d.bands[m.value>=cut?1:0];d.color=b.color;d.status=b.label;d.meaning=b.meaning;}
+  }else if(test.id==='dias'){
     const meanings=['Mayor índice: más impulsividad informada por el cuidador.','Mayor puntuación: más dificultades de regulación conductual.','Mayor puntuación: más respuestas de agresión o rechazo de la novedad informadas.','Mayor puntuación: mayor capacidad de respuesta e interés. No equivale a mayor gravedad; la consistencia de este factor es limitada.'];
     d.meaning=meanings[index];d.low=index===3?'Menor respuesta':'Menor puntuación';d.high=index===3?'Mayor respuesta':'Mayor puntuación';d.color=index===3?'purple':'blue';
   }else if(test.id==='cfq'){
